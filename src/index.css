@@ -133,6 +133,7 @@ input, select, textarea { font-family: inherit; }
 .hero {
   position: relative; overflow: hidden;
   border-radius: var(--radius); margin: 24px 0;
+  margin-top: 24px;
   background: linear-gradient(135deg, var(--navy) 0%, #163a63 60%, #1d4d80 100%);
   color: #fff; padding: 56px 48px; min-height: 360px;
   display: flex; align-items: center;
@@ -494,4 +495,9 @@ footer { background: var(--bg-elev); border-top: 1px solid var(--border); paddin
 body > #root > .page-wrapper,
 main {
   padding-top: calc(var(--announce-height) + var(--nav-height) + 20px);
+}
+
+.container.page,
+main.container {
+  padding-top: calc(var(--announce-height) + var(--nav-height) + 24px);
 }
