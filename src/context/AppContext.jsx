@@ -44,9 +44,15 @@ export function AppProvider({ children }) {
     document.documentElement.dataset.theme = theme;
   }, [theme]);
 
-  const [cart, setCart] = useLocalStorage("uxnin.cart", []);
+  const [cart, setCart]       = useLocalStorage("uxnin.cart", []);
   const [wishlist, setWishlist] = useLocalStorage("uxnin.wishlist", []);
-  const [orders, setOrders] = useLocalStorage("uxnin.orders", ORDERS_SEED);
+  const [orders, setOrders]   = useLocalStorage("uxnin.orders", ORDERS_SEED);
+  const [user, setUser]       = useLocalStorage("uxnin.user", null);
+
+  const logout = useCallback(() => {
+    setUser(null);
+    navigate("home");
+  }, [setUser, navigate]);
 
   const addToCart = useCallback((p, qty = 1) => {
     setCart((prev) => {
@@ -78,7 +84,7 @@ export function AppProvider({ children }) {
   const placeOrder = useCallback((total) => {
     const newOrder = {
       id: "UX-" + (2849 + orders.length),
-      customer: "You",
+      customer: user ? user.name : "You",
       total,
       status: "processing",
       date: new Date().toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" }),
@@ -86,7 +92,7 @@ export function AppProvider({ children }) {
     setOrders((prev) => [newOrder, ...prev]);
     clearCart();
     return newOrder;
-  }, [orders.length, setOrders, clearCart]);
+  }, [orders.length, setOrders, clearCart, user]);
 
   const [toast, setToast] = useState({ msg: "", show: false });
   const tRef = useRef();
@@ -104,6 +110,7 @@ export function AppProvider({ children }) {
     cart, addToCart, removeFromCart, updateQty, clearCart,
     wishlist, toggleWishlist, isWished,
     orders, placeOrder,
+    user, setUser, logout,
     pushToast,
     drawerOpen, setDrawerOpen,
   };

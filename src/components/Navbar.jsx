@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useApp } from "../context/AppContext";
+import Icon from "./Icon";
 
 const NAV_LINKS = [
   {
@@ -57,7 +58,7 @@ const NAV_LINKS = [
 ];
 
 export default function Navbar() {
-  const { route, navigate, cart, wishlist, theme, setTheme, setDrawerOpen } = useApp();
+  const { route, navigate, cart, wishlist, theme, setTheme, setDrawerOpen, user, logout } = useApp();
 
   const dark = theme === "dark";
   const cartCount = cart.reduce((s, i) => s + i.qty, 0);
@@ -336,6 +337,79 @@ export default function Navbar() {
               </svg>
             )}
           </button>
+
+          {/* Auth */}
+          {user ? (
+            <div
+              className="nav-actions auth-block"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                marginLeft: "0.25rem",
+              }}
+            >
+              <span
+                className="nav-link"
+                title={user.name}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  color: "rgba(255,255,255,0.9)",
+                  fontSize: "0.85rem",
+                  fontWeight: 600,
+                  maxWidth: 140,
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                <Icon name="user" size={18} />
+                {user.name}
+              </span>
+              <button
+                className="btn btn-ghost"
+                onClick={() => logout()}
+                style={{
+                  background: "rgba(255,255,255,0.07)",
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  borderRadius: 8,
+                  padding: "6px 12px",
+                  color: "rgba(255,255,255,0.85)",
+                  fontSize: "0.82rem",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  transition: "all 0.18s",
+                }}
+              >
+                Logout
+              </button>
+            </div>
+          ) : (
+            <button
+              className="btn btn-teal"
+              onClick={() => navigate("login")}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                background: "var(--teal)",
+                border: "none",
+                borderRadius: 8,
+                padding: "6px 14px",
+                color: "#0b1622",
+                fontSize: "0.85rem",
+                fontWeight: 700,
+                cursor: "pointer",
+                marginLeft: "0.25rem",
+                transition: "all 0.18s",
+              }}
+            >
+              <Icon name="user" size={18} />
+              Sign in
+            </button>
+          )}
         </div>
       </nav>
 

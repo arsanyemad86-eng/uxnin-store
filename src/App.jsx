@@ -9,6 +9,8 @@ import Cart from "./pages/Cart.jsx";
 import Products from "./pages/Products.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import Contact from "./pages/Contact.jsx";
+import Login from "./pages/Login.jsx";
+import Register from "./pages/Register.jsx";
 import { useApp } from "./context/AppContext.jsx";
 
 const PAGES = {
@@ -18,13 +20,26 @@ const PAGES = {
   products: Products,
   dashboard: Dashboard,
   contact: Contact,
+  login: Login,
+  register: Register,
 };
+
+// صفحات من غير navbar وfooter
+const AUTH_ROUTES = ["login", "register"];
 
 export default function App() {
   const { route, params } = useApp();
   const Page = PAGES[route] || Home;
-  // key triggers the page-fade animation on every route change
   const animKey = route + (params[0] || "");
+  const isAuth = AUTH_ROUTES.includes(route);
+
+  if (isAuth) {
+    return (
+      <main key={animKey}>
+        <Page/>
+      </main>
+    );
+  }
 
   return (
     <>
