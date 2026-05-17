@@ -13,6 +13,9 @@
   --shadow: 0 6px 24px rgba(15, 42, 71, 0.08);
   --radius: 14px;
   --transition: 220ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  --announce-height: 36px;
+  --nav-height: 60px;
 }
 [data-theme="dark"] {
   --bg: #0b1623;
@@ -43,6 +46,8 @@ input, select, textarea { font-family: inherit; }
   background: linear-gradient(90deg, var(--navy), #163a63);
   color: #fff; text-align: center; font-size: 13px;
   padding: 8px 14px; letter-spacing: 0.3px; font-weight: 500;
+  height: var(--announce-height);
+  display: flex; align-items: center; justify-content: center;
 }
 .announce strong { color: var(--amber); }
 
@@ -488,5 +493,5 @@ footer { background: var(--bg-elev); border-top: 1px solid var(--border); paddin
 
 body > #root > .page-wrapper,
 main {
-  padding-top: 60px;
+  padding-top: calc(var(--announce-height) + var(--nav-height));
 }

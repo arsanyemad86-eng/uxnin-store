@@ -108,11 +108,13 @@ export default function Navbar() {
       <nav
         className="navbar"
         style={{position: "fixed",
-        top: 0,
+        top: "var(--announce-height)",
         left: 0,
           right: 0,
           width: "100%",
+          height: "var(--nav-height)",
           zIndex: 900,
+          background: "var(--navy)",
           boxShadow: scrolled ? "0 2px 16px rgba(0,0,0,0.18)" : "none",
           transition: "box-shadow 0.3s",
           borderBottom: "1px solid var(--nav-border, rgba(255,255,255,0.07))",
