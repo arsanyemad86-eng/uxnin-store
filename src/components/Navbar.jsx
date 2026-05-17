@@ -108,7 +108,7 @@ export default function Navbar() {
       <nav
         className="navbar"
         style={{position: "fixed",
-        top: "var(--announce-height)",
+        top: "36px",
         left: 0,
           right: 0,
           width: "100%",
