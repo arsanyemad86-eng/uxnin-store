@@ -133,16 +133,21 @@ input, select, textarea { font-family: inherit; }
 .hero {
   position: relative; overflow: hidden;
   border-radius: var(--radius); margin: 24px 0;
-  margin-top: 24px;
-  background: linear-gradient(135deg, var(--navy) 0%, #163a63 60%, #1d4d80 100%);
-  color: #fff; padding: 56px 48px; min-height: 360px;
+  background: linear-gradient(135deg, #dbeeff 0%, #e8f4fd 60%, #f0f8ff 100%);
+  color: var(--navy); padding: 56px 48px; min-height: 360px;
   display: flex; align-items: center;
 }
 .hero-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 28px; width: 100%; align-items: center; }
 .hero h1 { font-size: 44px; line-height: 1.08; font-weight: 800; margin-bottom: 14px; }
 .hero h1 .accent { color: var(--amber); }
-.hero p { color: #cfdcec; font-size: 16px; max-width: 480px; margin-bottom: 24px; }
+.hero p { color: var(--text-muted); font-size: 16px; max-width: 480px; margin-bottom: 24px; }
+[data-theme="dark"] .hero {
+  background: linear-gradient(135deg, #0b1623 0%, #0f2a47 60%, #163a63 100%);
+  color: #fff;
+}
+[data-theme="dark"] .hero p { color: #cfdcec; }
 .hero-cta { display: flex; gap: 12px; flex-wrap: wrap; }
+
 .btn {
   display: inline-flex; align-items: center; gap: 8px;
   padding: 12px 20px; border-radius: 10px;
@@ -151,8 +156,10 @@ input, select, textarea { font-family: inherit; }
 }
 .btn-primary { background: var(--coral); color: #fff; }
 .btn-primary:hover { background: #ff4844; transform: translateY(-1px); }
-.btn-secondary { background: rgba(255,255,255,0.12); color: #fff; border-color: rgba(255,255,255,0.2); }
-.btn-secondary:hover { background: rgba(255,255,255,0.2); }
+.btn-secondary { background: rgba(15,42,71,0.08); color: var(--navy); border-color: rgba(15,42,71,0.2); }
+.btn-secondary:hover { background: rgba(15,42,71,0.15); }
+[data-theme="dark"] .btn-secondary { background: rgba(255,255,255,0.12); color: #fff; border-color: rgba(255,255,255,0.2); }
+[data-theme="dark"] .btn-secondary:hover { background: rgba(255,255,255,0.2); }
 .btn-ghost { background: transparent; color: var(--text); border-color: var(--border); }
 .btn-ghost:hover { background: var(--bg); }
 .btn-teal { background: var(--teal); color: #fff; }

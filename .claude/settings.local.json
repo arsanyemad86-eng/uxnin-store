@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls -la \"C:\\\\programming\\\\project-CV\\\\uxnin-project\")",
+      "Bash(mkdir -p \"C:\\\\programming\\\\project-CV\\\\uxnin-project\\\\backend\\\\config\" \"C:\\\\programming\\\\project-CV\\\\uxnin-project\\\\backend\\\\models\" \"C:\\\\programming\\\\project-CV\\\\uxnin-project\\\\backend\\\\middleware\" \"C:\\\\programming\\\\project-CV\\\\uxnin-project\\\\backend\\\\routes\")",
+      "Bash(npm install *)",
+      "Bash(Remove-Item -Recurse -Force \"C:\\\\programming\\\\project-CV\\\\uxnin-project\\\\backend\\\\config\", \"C:\\\\programming\\\\project-CV\\\\uxnin-project\\\\backend\\\\middleware\", \"C:\\\\programming\\\\project-CV\\\\uxnin-project\\\\backend\\\\models\", \"C:\\\\programming\\\\project-CV\\\\uxnin-project\\\\backend\\\\routes\")",
+      "Bash(node server.js)",
+      "Bash(curl -s http://localhost:5000/api/health)"
+    ]
+  }
+}
