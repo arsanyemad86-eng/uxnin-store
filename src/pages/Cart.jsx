@@ -14,9 +14,7 @@ export default function Cart() {
 
   const checkout = () => {
     if (cart.length === 0) return;
-    placeOrder(total);
-    pushToast("Order placed! Check dashboard.");
-    setTimeout(() => navigate("dashboard"), 600);
+    navigate("checkout");
   };
 
   return (

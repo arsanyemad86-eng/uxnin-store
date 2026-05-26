@@ -74,7 +74,7 @@ export default function Dashboard() {
       <div className="section-head" style={{margin: "24px 0 18px"}}>
         <div>
           <h2>Dashboard</h2>
-          <div className="sub">Live snapshot from your localStorage data.</div>
+          <div className="sub">Live store overview.</div>
         </div>
       </div>
       <div className="stat-grid">

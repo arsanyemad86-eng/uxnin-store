@@ -204,12 +204,12 @@ export default function Checkout() {
                 <div className="form-row">
                   <div className="field">
                     <label>First name</label>
-                    <input value={form.firstName} onChange={set("firstName")} placeholder="Ahmed"/>
+                    <input value={form.firstName} onChange={set("firstName")} placeholder="First name"/>
                     {errors.firstName && <div className="auth-error">{errors.firstName}</div>}
                   </div>
                   <div className="field">
                     <label>Last name</label>
-                    <input value={form.lastName} onChange={set("lastName")} placeholder="Ali"/>
+                    <input value={form.lastName} onChange={set("lastName")} placeholder="Last name"/>
                     {errors.lastName && <div className="auth-error">{errors.lastName}</div>}
                   </div>
                 </div>
@@ -234,7 +234,7 @@ export default function Checkout() {
 
                 <div className="field">
                   <label>City</label>
-                  <input value={form.city} onChange={set("city")} placeholder="Cairo"/>
+                  <input value={form.city} onChange={set("city")} placeholder="Your city"/>
                   {errors.city && <div className="auth-error">{errors.city}</div>}
                 </div>
 

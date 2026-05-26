@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard.jsx";
 import Contact from "./pages/Contact.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
+import Checkout from "./pages/Checkout.jsx";
 import { useApp } from "./context/AppContext.jsx";
 
 const PAGES = {
@@ -22,9 +23,9 @@ const PAGES = {
   contact: Contact,
   login: Login,
   register: Register,
+  checkout: Checkout,
 };
 
-// صفحات من غير navbar وfooter
 const AUTH_ROUTES = ["login", "register"];
 
 export default function App() {

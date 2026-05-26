@@ -190,11 +190,18 @@ input, select, textarea { font-family: inherit; }
   transition: all var(--transition); position: relative;
   display: flex; flex-direction: column;
 }
+[data-theme="dark"] .product-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.08);
+}
 .product-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); border-color: rgba(20,184,166,0.5); }
 .product-img-wrap {
-  background: #fff; padding: 18px; height: 220px;
+  background: rgba(255, 255, 255, 0.05); padding: 18px; height: 220px;
   display: flex; align-items: center; justify-content: center;
   position: relative;
+}
+[data-theme="dark"] .product-img-wrap {
+  background: rgba(255, 255, 255, 0.04);
 }
 .product-img-wrap img { max-height: 100%; max-width: 100%; object-fit: contain; transition: transform var(--transition); }
 .product-card:hover .product-img-wrap img { transform: scale(1.04); }
@@ -204,14 +211,21 @@ input, select, textarea { font-family: inherit; }
   font-size: 11px; padding: 3px 8px; border-radius: 6px; font-weight: 600;
 }
 .product-tag.new { background: var(--teal); }
+
+/* ── WISHLIST BUTTON — no background, transparent ── */
 .wishlist-btn {
   position: absolute; top: 10px; right: 10px;
   width: 36px; height: 36px; border-radius: 50%;
-  background: rgba(255,255,255,0.92); display: flex; align-items: center; justify-content: center;
+  background: transparent;
+  display: flex; align-items: center; justify-content: center;
   color: var(--text-muted); transition: all var(--transition);
+}
+[data-theme="dark"] .wishlist-btn {
+  color: rgba(255, 255, 255, 0.4);
 }
 .wishlist-btn:hover { color: var(--coral); transform: scale(1.08); }
 .wishlist-btn.active { color: var(--coral); }
+
 .product-body { padding: 14px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
 .product-brand { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: 600; }
 .product-name { font-size: 14px; font-weight: 600; line-height: 1.35; min-height: 38px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; cursor: pointer; }
@@ -501,6 +515,7 @@ main {
 main.container {
   padding-top: calc(var(--announce-height) + var(--nav-height) + 24px);
 }
+
 /* ═══════════════════════════════════════
    AUTH PAGES — Login & Register
 ═══════════════════════════════════════ */
@@ -547,7 +562,6 @@ main.container {
   animation: fadeIn 320ms ease;
 }
 
-/* Register card is slightly wider */
 .auth-card.wide { max-width: 480px; }
 
 .auth-header { margin-bottom: 28px; }
@@ -572,7 +586,6 @@ main.container {
   color: var(--text-muted);
 }
 
-/* ── FIELDS ── */
 .auth-field { margin-bottom: 16px; }
 
 .auth-field label {
@@ -640,7 +653,6 @@ main.container {
 }
 .auth-eye:hover { color: var(--text); }
 
-/* ── ERROR MESSAGE ── */
 .auth-error {
   font-size: 12px;
   color: var(--coral);
@@ -648,14 +660,12 @@ main.container {
   font-weight: 500;
 }
 
-/* ── TWO-COLUMN ROW (Register names) ── */
 .auth-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
 
-/* ── OPTIONS ROW (Login) ── */
 .auth-options {
   display: flex;
   align-items: center;
@@ -663,7 +673,6 @@ main.container {
   margin-bottom: 20px;
 }
 
-/* ── CHECKBOX ── */
 .auth-check {
   display: flex;
   align-items: center;
@@ -704,7 +713,6 @@ main.container {
 
 .auth-check input:checked ~ .auth-check-box::after { display: block; }
 
-/* ── LINKS ── */
 .auth-link {
   font-size: 13px;
   color: var(--teal);
@@ -727,10 +735,8 @@ main.container {
 }
 .auth-link-btn:hover { opacity: 0.75; }
 
-/* ── TERMS ROW ── */
 .auth-terms { margin-bottom: 20px; }
 
-/* ── DIVIDER ── */
 .auth-divider {
   display: flex;
   align-items: center;
@@ -750,7 +756,6 @@ main.container {
   white-space: nowrap;
 }
 
-/* ── SOCIAL BUTTONS ── */
 .auth-social {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -778,14 +783,12 @@ main.container {
   background: var(--bg-elev);
 }
 
-/* ── FOOTER ── */
 .auth-footer {
   text-align: center;
   font-size: 13px;
   color: var(--text-muted);
 }
 
-/* ── PASSWORD STRENGTH ── */
 .auth-strength {
   margin-top: 8px;
   display: flex;
@@ -813,11 +816,11 @@ main.container {
   min-width: 36px;
 }
 
-/* ── RESPONSIVE ── */
 @media (max-width: 480px) {
   .auth-card { padding: 28px 20px; }
   .auth-row { grid-template-columns: 1fr; }
 }
+
 /* ═══════════════════════════════════════
    CHECKOUT PAGE
 ═══════════════════════════════════════ */
@@ -841,7 +844,6 @@ main.container {
   font-weight: 700;
 }
 
-/* ── STEP BAR ── */
 .checkout-steps {
   display: flex;
   align-items: center;
@@ -891,7 +893,6 @@ main.container {
 }
 .step-line.active { background: var(--teal); }
 
-/* ── CHECKOUT NAV ── */
 .checkout-nav {
   display: flex;
   align-items: center;
@@ -899,7 +900,6 @@ main.container {
   gap: 10px;
 }
 
-/* ── ORDER SUMMARY ── */
 .checkout-summary {
   position: sticky;
   top: 92px;
@@ -989,7 +989,6 @@ main.container {
   flex-shrink: 0;
 }
 
-/* ── PAYMENT OPTIONS ── */
 .payment-options {
   display: flex;
   flex-direction: column;
@@ -1022,7 +1021,6 @@ main.container {
   color: var(--text);
 }
 
-/* ── CONFIRM ROWS ── */
 .confirm-row {
   display: flex;
   justify-content: space-between;
@@ -1044,7 +1042,6 @@ main.container {
   flex-shrink: 0;
 }
 
-/* ── RESPONSIVE ── */
 @media (max-width: 980px) {
   .checkout-grid { grid-template-columns: 1fr; }
   .checkout-summary { position: static; }

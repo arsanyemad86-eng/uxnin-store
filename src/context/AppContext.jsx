@@ -84,7 +84,7 @@ export function AppProvider({ children }) {
   const placeOrder = useCallback((total) => {
     const newOrder = {
       id: "UX-" + (2849 + orders.length),
-      customer: user ? user.name : "You",
+      customer: user ? user.name : "Youssef Nader",
       total,
       status: "processing",
       date: new Date().toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" }),

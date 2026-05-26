@@ -108,9 +108,10 @@ export default function Navbar() {
     <>
       <nav
         className="navbar"
-        style={{position: "fixed",
-        top: "36px",
-        left: 0,
+        style={{
+          position: "fixed",
+          top: "36px",
+          left: 0,
           right: 0,
           width: "100%",
           height: "var(--nav-height)",
@@ -222,6 +223,7 @@ export default function Navbar() {
             </button>
             {searchOpen && (
               <form
+                className="search-dropdown-form"
                 onSubmit={handleSearchSubmit}
                 style={{
                   position: "absolute", right: 0, top: "calc(100% + 10px)",
@@ -338,7 +340,7 @@ export default function Navbar() {
             )}
           </button>
 
-          {/* Auth */}
+          {/* Auth — desktop only */}
           {user ? (
             <div
               className="nav-actions auth-block"
@@ -356,7 +358,7 @@ export default function Navbar() {
                   display: "flex",
                   alignItems: "center",
                   gap: 6,
-                  color: "rgba(255,255,255,0.9)",
+                  color: "var(--teal)",
                   fontSize: "0.85rem",
                   fontWeight: 600,
                   maxWidth: 140,
@@ -512,6 +514,59 @@ export default function Navbar() {
               </a>
             );
           })}
+
+          {/* Auth in Drawer */}
+          <div style={{ marginTop: "0.75rem", borderTop: "1px solid rgba(255,255,255,0.07)", paddingTop: "0.75rem" }}>
+            <p style={{
+              fontSize: "0.7rem", fontWeight: 700, letterSpacing: "0.1em",
+              color: "rgba(255,255,255,0.3)", textTransform: "uppercase",
+              padding: "0 0.75rem", marginBottom: "0.5rem",
+            }}>Account</p>
+            {user ? (
+              <>
+                <div style={{
+                  display: "flex", alignItems: "center", gap: "0.75rem",
+                  padding: "0.75rem 0.85rem", borderRadius: 10,
+                  background: "rgba(255,255,255,0.04)", marginBottom: "0.4rem",
+                }}>
+                  <Icon name="user" size={18} />
+                  <span style={{ color: "rgba(255,255,255,0.85)", fontSize: "0.9rem", fontWeight: 600 }}>
+                    {user.name}
+                  </span>
+                </div>
+                <button
+                  onClick={() => { logout(); setMenuOpen(false); }}
+                  style={{
+                    width: "100%", padding: "0.75rem", borderRadius: 10,
+                    background: "rgba(239,68,68,0.1)",
+                    border: "1px solid rgba(239,68,68,0.2)",
+                    color: "#f87171", fontSize: "0.9rem", fontWeight: 600,
+                    cursor: "pointer", display: "flex", alignItems: "center", gap: "0.75rem",
+                  }}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16 17 21 12 16 7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                  </svg>
+                  Logout
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => { navigate("login"); setMenuOpen(false); }}
+                style={{
+                  width: "100%", padding: "0.75rem", borderRadius: 10,
+                  background: "var(--teal)", border: "none",
+                  color: "#0b1622", fontSize: "0.9rem", fontWeight: 700,
+                  cursor: "pointer", display: "flex", alignItems: "center", gap: "0.75rem",
+                }}
+              >
+                <Icon name="user" size={18} />
+                Sign in
+              </button>
+            )}
+          </div>
         </nav>
 
         {/* Footer */}
@@ -544,6 +599,14 @@ export default function Navbar() {
         @media (max-width: 768px) {
           .hamburger-btn { display: flex !important; }
           .desktop-links { display: none !important; }
+          .auth-block { display: none !important; }
+          .search-dropdown-form {
+            position: fixed !important;
+            left: 12px !important;
+            right: 12px !important;
+            top: 96px !important;
+            min-width: unset !important;
+          }
         }
         @media (min-width: 769px) {
           .hamburger-btn { display: none !important; }
