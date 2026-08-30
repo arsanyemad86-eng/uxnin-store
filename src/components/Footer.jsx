@@ -1,5 +1,5 @@
 import React from "react";
-import { CATEGORIES } from "../data/products.js";
+import { CATEGORIES } from "../data/products.jsx"
 import { useApp } from "../context/AppContext.jsx";
 
 export default function Footer() {
@@ -20,7 +20,10 @@ export default function Footer() {
           <div>
             <h4>Shop</h4>
             {CATEGORIES.filter((c) => c.key !== "all").slice(0, 5).map((c) => (
-              <a key={c.key} onClick={() => navigate("shop")}>{c.name}</a>
+              <a key={c.key} onClick={() => {
+                navigate("shop");
+                setTimeout(() => window.dispatchEvent(new CustomEvent("uxnin:cat", { detail: c.key })), 50);
+              }}>{c.name}</a>
             ))}
           </div>
           <div>

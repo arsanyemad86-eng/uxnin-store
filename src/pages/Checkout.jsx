@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Icon from "../components/Icon.jsx";
 import { useApp } from "../context/AppContext.jsx";
+import api from "../api/axios.js";
 
 const STEPS = ["Cart", "Details", "Confirm"];
 
@@ -24,13 +25,13 @@ function StepBar({ step }) {
   );
 }
 
-function OrderSummary({ cart, discount, shipping, total, promoApplied }) {
+function OrderSummary({ cart, discount, shipping, total, promoApplied, promoCode }) {
   return (
     <aside className="checkout-summary">
       <h3>Order summary</h3>
       <div className="checkout-items">
         {cart.map((i) => (
-          <div key={i.id} className="checkout-item">
+          <div key={i._id} className="checkout-item">
             <div className="checkout-item-img">
               <img src={i.image} alt={i.name}/>
               <span className="checkout-item-qty">{i.qty}</span>
@@ -50,7 +51,7 @@ function OrderSummary({ cart, discount, shipping, total, promoApplied }) {
         </div>
         {discount > 0 && (
           <div className="sum-row discount">
-            <span>Discount (FIT10)</span>
+            <span>{promoCode ? promoCode.toUpperCase() : "Discount"}</span>
             <span>− LE {discount.toLocaleString()}</span>
           </div>
         )}
@@ -68,11 +69,12 @@ function OrderSummary({ cart, discount, shipping, total, promoApplied }) {
 }
 
 export default function Checkout() {
-  const { cart, user, placeOrder, pushToast, navigate } = useApp();
+  const {
+    cart, user, clearCart, pushToast, navigate,
+    promo, setPromo, promoApplied, discountPercent, isApplyingPromo, applyPromo,
+  } = useApp();
 
   const [step, setStep]   = useState(0);
-  const [promo, setPromo] = useState("");
-  const [promoApplied, setPromoApplied] = useState(false);
   const [form, setForm]   = useState({
     firstName: user?.name?.split(" ")[0] || "",
     lastName:  user?.name?.split(" ")[1] || "",
@@ -83,9 +85,10 @@ export default function Checkout() {
     payment:   "cod",
   });
   const [errors, setErrors] = useState({});
+  const [isPlacing, setIsPlacing] = useState(false);
 
   const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
-  const discount = promoApplied ? Math.round(subtotal * 0.1) : 0;
+    const discount = promoApplied ? Math.round(subtotal * (discountPercent / 100)) : 0;
   const shipping = subtotal > 0 && subtotal - discount < 300 ? 50 : 0;
   const total    = subtotal - discount + shipping;
 
@@ -112,19 +115,41 @@ export default function Checkout() {
     }
   };
 
-  const handlePlace = () => {
-    const order = placeOrder(total);
-    pushToast("Order " + order.id + " placed!");
-    navigate("dashboard");
-  };
+  const handlePlace = async () => {
+    if (isPlacing) return;
+    setIsPlacing(true);
+    const orderItems = cart.map((i) => ({
+      product: i._id,
+      name: i.name,
+      image: i.image,
+      price: i.price,
+      qty: i.qty,
+    }));
 
-  const applyPromo = () => {
-    if (promo.trim().toUpperCase() === "FIT10") {
-      setPromoApplied(true);
-      pushToast("FIT10 applied — 10% off!");
-    } else {
-      setPromoApplied(false);
-      pushToast("Invalid promo code.");
+    const shippingInfo = {
+      firstName: form.firstName,
+      lastName: form.lastName,
+      email: form.email,
+      phone: form.phone,
+      address: form.address,
+      city: form.city,
+    };
+
+    try {
+      const { data } = await api.post("/orders", {
+    orderItems,
+    shippingInfo,
+    paymentMethod: form.payment,
+    promoCode: promoApplied ? promo : "",
+  });
+
+      clearCart();
+      pushToast("Order " + data._id + " placed!");
+      navigate("dashboard");
+    } catch (err) {
+      pushToast(err.response?.data?.message || "Failed to place order.");
+    } finally {
+      setIsPlacing(false);
     }
   };
 
@@ -163,7 +188,7 @@ export default function Checkout() {
               <h3>Review your cart</h3>
               <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 16 }}>
                 {cart.map((i) => (
-                  <div key={i.id} className="cart-item">
+                  <div key={i._id} className="cart-item">
                     <img src={i.image} alt=""/>
                     <div>
                       <div className="cart-item-name">{i.name}</div>
@@ -182,14 +207,20 @@ export default function Checkout() {
                   placeholder="Promo code (FIT10)"
                   value={promo}
                   onChange={(e) => setPromo(e.target.value)}
+                  disabled={isApplyingPromo}
                 />
-                <button className="btn btn-ghost" style={{ padding: "9px 14px" }} onClick={applyPromo}>
-                  Apply
+                <button
+                  className="btn btn-ghost"
+                  style={{ padding: "9px 14px" }}
+                  onClick={() => applyPromo(subtotal)}
+                  disabled={isApplyingPromo}
+                >
+                  {isApplyingPromo ? "Applying..." : "Apply"}
                 </button>
               </div>
               {promoApplied && (
                 <div style={{ fontSize: 12.5, color: "var(--teal)", fontWeight: 600, marginTop: 6 }}>
-                  ✓ FIT10 applied — 10% off
+                  ✓ {discountPercent}% off applied
                 </div>
               )}
             </div>
@@ -317,8 +348,8 @@ export default function Checkout() {
                 {step === 0 ? "Continue to details" : "Review order"} <Icon name="chevron" size={15}/>
               </button>
             ) : (
-              <button className="btn btn-primary" style={{ marginLeft: "auto" }} onClick={handlePlace}>
-                <Icon name="check" size={15}/> Place order
+              <button className="btn btn-primary" style={{ marginLeft: "auto" }} onClick={handlePlace} disabled={isPlacing}>
+                <Icon name="check" size={15}/> {isPlacing ? "Placing order..." : "Place order"}
               </button>
             )}
           </div>
@@ -332,6 +363,7 @@ export default function Checkout() {
           shipping={shipping}
           total={total}
           promoApplied={promoApplied}
+          promoCode={promo}
         />
       </div>
     </div>

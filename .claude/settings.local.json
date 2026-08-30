@@ -6,7 +6,14 @@
       "Bash(npm install *)",
       "Bash(Remove-Item -Recurse -Force \"C:\\\\programming\\\\project-CV\\\\uxnin-project\\\\backend\\\\config\", \"C:\\\\programming\\\\project-CV\\\\uxnin-project\\\\backend\\\\middleware\", \"C:\\\\programming\\\\project-CV\\\\uxnin-project\\\\backend\\\\models\", \"C:\\\\programming\\\\project-CV\\\\uxnin-project\\\\backend\\\\routes\")",
       "Bash(node server.js)",
-      "Bash(curl -s http://localhost:5000/api/health)"
+      "Bash(curl -s http://localhost:5000/api/health)",
+      "Bash(node -e \"require\\('./node_modules/framer-motion/dist/framer-motion.cjs.js'\\); console.log\\('ok'\\)\")",
+      "Bash(npm run *)",
+      "Bash(node -e ' *)",
+      "Bash(node -e \"console.log\\(require\\('./node_modules/framer-motion/package.json'\\).version\\)\")",
+      "Bash(Remove-Item -Recurse -Force node_modules/.vite -ErrorAction SilentlyContinue)",
+      "Bash(node -e \"require\\('gsap/ScrollTrigger'\\)\")",
+      "Bash(npm ls *)"
     ]
   }
 }

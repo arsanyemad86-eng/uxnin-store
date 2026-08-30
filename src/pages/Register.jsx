@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import Icon from "../components/Icon.jsx";
 import { useApp } from "../context/AppContext.jsx";
+import api from "../api/axios.js";
 
 const EMAIL_RX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -82,7 +83,7 @@ export default function Register() {
     return e;
   };
 
-  const submit = (ev) => {
+  const submit = async (ev) => {
     ev.preventDefault();
     const v = validate();
     setErrors(v);
@@ -90,29 +91,21 @@ export default function Register() {
 
     setBusy(true);
     try {
-      let users = [];
-      try {
-        users = JSON.parse(window.localStorage.getItem("uxnin_users") || "[]");
-      } catch { users = []; }
-
-      const email = form.email.trim().toLowerCase();
-      if (users.some((u) => u.email.toLowerCase() === email)) {
-        setErrors({ email: "An account with this email already exists" });
-        setBusy(false);
-        return;
-      }
-
       const name = `${form.firstName.trim()} ${form.lastName.trim()}`.trim();
-      const newUser = { name, email, password: form.password };
-      users.push(newUser);
-      window.localStorage.setItem("uxnin_users", JSON.stringify(users));
 
-      const safeUser = { name, email };
-      setUser(safeUser);
-      pushToast("Welcome!");
-      navigate("home");
-    } catch {
-      pushToast("Something went wrong, try again");
+      await api.post("/auth/register", {
+        name,
+        email: form.email.trim().toLowerCase(),
+        password: form.password,
+      });
+
+      pushToast("تم إنشاء الحساب بنجاح، سجّل دخولك الآن");
+      navigate("login");
+    } catch (err) {
+      const msg = err.response?.data?.message || "حدث خطأ، حاول مرة أخرى";
+      setErrors({ email: msg });
+      pushToast(msg, "error");
+    } finally {
       setBusy(false);
     }
   };

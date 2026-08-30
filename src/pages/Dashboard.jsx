@@ -1,25 +1,53 @@
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Chart from "chart.js/auto";
 import Icon from "../components/Icon.jsx";
-import { PRODUCTS, CATEGORIES } from "../data/products.js";
+import { CATEGORIES } from "../data/products.jsx";
 import { useApp } from "../context/AppContext.jsx";
+import api from "../api/axios.js";
 
 export default function Dashboard() {
-  const { orders, cart, theme } = useApp();
+  const { cart, theme } = useApp();
   const barRef = useRef();
   const donutRef = useRef();
   const barInst = useRef();
   const donutInst = useRef();
 
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [weeklyStats, setWeeklyStats] = useState(null);
+  const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    const fetchAll = async () => {
+      try {
+        const [ordersRes, statsRes, productsRes] = await Promise.all([
+          api.get("/orders/myorders"),
+          api.get("/orders/stats/weekly"),
+          api.get("/products"),
+        ]);
+        setOrders(ordersRes.data);
+        setWeeklyStats(statsRes.data);
+        setProducts(productsRes.data);
+      } catch (err) {
+        console.error("Failed to load dashboard data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAll();
+  }, []);
+
   const stats = useMemo(() => {
     const revenue = orders.reduce((s, o) => s + o.total, 0);
     const aov = orders.length ? Math.round(revenue / orders.length) : 0;
-    const customers = new Set(orders.map((o) => o.customer)).size;
+    const customers = new Set(orders.map((o) => o.shippingInfo?.email)).size;
     const cartItems = cart.reduce((s, i) => s + i.qty, 0);
     return { revenue, ordersCount: orders.length, aov, customers, cartItems };
   }, [orders, cart]);
 
   useEffect(() => {
+    if (!weeklyStats || products.length === 0) return;
+
     const isDark = theme === "dark";
     const grid = isDark ? "#1d3149" : "#e6eaf0";
     const text = isDark ? "#92a2b8" : "#5b6b80";
@@ -28,10 +56,10 @@ export default function Dashboard() {
     barInst.current = new Chart(barRef.current, {
       type: "bar",
       data: {
-        labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+        labels: weeklyStats.labels,
         datasets: [
-          { label: "Sales (LE)", data: [4200, 5100, 3800, 6700, 7800, 9200, 6400], backgroundColor: "#14b8a6", borderRadius: 8, barThickness: 22 },
-          { label: "Orders", data: [12, 18, 14, 22, 26, 30, 21], backgroundColor: "#ff5e5b", borderRadius: 8, barThickness: 22 },
+          { label: "Sales (LE)", data: weeklyStats.sales, backgroundColor: "#14b8a6", borderRadius: 8, barThickness: 22 },
+          { label: "Orders", data: weeklyStats.orders, backgroundColor: "#ff5e5b", borderRadius: 8, barThickness: 22 },
         ],
       },
       options: {
@@ -45,7 +73,7 @@ export default function Dashboard() {
     });
 
     const catCounts = {};
-    PRODUCTS.forEach((p) => { catCounts[p.category] = (catCounts[p.category] || 0) + 1; });
+    products.forEach((p) => { catCounts[p.category] = (catCounts[p.category] || 0) + 1; });
     if (donutInst.current) donutInst.current.destroy();
     donutInst.current = new Chart(donutRef.current, {
       type: "doughnut",
@@ -67,7 +95,7 @@ export default function Dashboard() {
       if (barInst.current) barInst.current.destroy();
       if (donutInst.current) donutInst.current.destroy();
     };
-  }, [theme]);
+  }, [theme, weeklyStats, products]);
 
   return (
     <div>
@@ -106,7 +134,7 @@ export default function Dashboard() {
 
       <div className="charts-row">
         <div className="chart-card">
-          <h3>Weekly sales & orders</h3>
+          <h3>Sales & orders (last 30 days)</h3>
           <div className="chart-canvas-wrap"><canvas ref={barRef}></canvas></div>
         </div>
         <div className="chart-card">
@@ -123,15 +151,23 @@ export default function Dashboard() {
           <div className="col-status">Status</div>
           <div className="col-date">Date</div>
         </div>
-        {orders.map((o) => (
-          <div key={o.id} className="row">
-            <div style={{fontWeight: 700}}>{o.id}</div>
-            <div>{o.customer}</div>
-            <div style={{fontWeight: 700}}>LE {o.total.toLocaleString()}</div>
-            <div className="col-status"><span className={"status " + o.status}>{o.status}</span></div>
-            <div className="col-date" style={{color: "var(--text-muted)"}}>{o.date}</div>
-          </div>
-        ))}
+        {loading ? (
+          <div style={{ padding: 24, textAlign: "center", color: "var(--text-muted)" }}>Loading orders...</div>
+        ) : orders.length === 0 ? (
+          <div style={{ padding: 24, textAlign: "center", color: "var(--text-muted)" }}>No orders yet.</div>
+        ) : (
+          orders.map((o) => (
+            <div key={o._id} className="row">
+              <div style={{fontWeight: 700}}>{o._id.slice(-6).toUpperCase()}</div>
+              <div>{o.shippingInfo?.firstName} {o.shippingInfo?.lastName}</div>
+              <div style={{fontWeight: 700}}>LE {o.total.toLocaleString()}</div>
+              <div className="col-status"><span className={"status " + o.status}>{o.status}</span></div>
+              <div className="col-date" style={{color: "var(--text-muted)"}}>
+                {new Date(o.createdAt).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" })}
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

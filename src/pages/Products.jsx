@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import Icon from "../components/Icon.jsx";
 import ProductCard from "../components/ProductCard.jsx";
-import { PRODUCTS, CATEGORIES } from "../data/products.js";
+import { CATEGORIES, HERO_IMAGE } from "../data/products.jsx";
+import api from "../api/axios.js";
 import { useApp } from "../context/AppContext.jsx";
 
 const FEATURES = [
@@ -11,14 +12,75 @@ const FEATURES = [
   "Easy 14-day returns",
 ];
 
+function SkeletonCard() {
+  return (
+    <div className="skeleton-card">
+      <div className="skeleton-img skeleton-pulse"/>
+      <div style={{ padding: 14, display: "flex", flexDirection: "column", gap: 8 }}>
+        <div className="skeleton-line skeleton-pulse" style={{ width: "40%", height: 10 }}/>
+        <div className="skeleton-line skeleton-pulse" style={{ width: "90%", height: 13 }}/>
+        <div className="skeleton-line skeleton-pulse" style={{ width: "70%", height: 13 }}/>
+        <div className="skeleton-line skeleton-pulse" style={{ width: "50%", height: 16, marginTop: 4 }}/>
+      </div>
+      <div style={{ padding: "0 14px 14px" }}>
+        <div className="skeleton-line skeleton-pulse" style={{ width: "100%", height: 36, borderRadius: 10 }}/>
+      </div>
+    </div>
+  );
+}
+
 export default function Products() {
-  const { params, navigate, addToCart, toggleWishlist, isWished, pushToast } = useApp();
+  const { params, navigate, addToCart, toggleWishlist, isWished, pushToast, addRecentlyViewed } = useApp();
+  const [skelLoading, setSkelLoading] = useState(true);
+  const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const { data } = await api.get("/products");
+        setProducts(data);
+      } catch (err) {
+        pushToast("تعذر تحميل المنتجات", "error");
+      } finally {
+        setSkelLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
+
   const id = params[0];
-  const product = PRODUCTS.find((p) => String(p.id) === String(id));
+  const product = products.find((p) => String(p._id) === String(id));
   const [qty, setQty] = useState(1);
+  const [zoomOpen, setZoomOpen] = useState(false);
+
+  /* ── Add to cart button animation ── */
+  const [adding, setAdding] = useState(false);
+  const addTimeoutRef = useRef(null);
+
+  useEffect(() => () => clearTimeout(addTimeoutRef.current), []);
+
+  useEffect(() => {
+    if (product) addRecentlyViewed(product._id);
+  }, [product, addRecentlyViewed]);
+
+  useEffect(() => {
+    if (!zoomOpen) return;
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") setZoomOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [zoomOpen]);
+
+  const handleAddToCart = () => {
+    addToCart(product, qty);
+    pushToast("Added to cart ✓", "cart");
+    setAdding(true);
+    clearTimeout(addTimeoutRef.current);
+    addTimeoutRef.current = setTimeout(() => setAdding(false), 2000);
+  };
 
   if (!id) {
-    // No ID: behave as a "All products" listing
     return (
       <div>
         <div className="section-head" style={{margin: "24px 0 18px"}}>
@@ -29,7 +91,10 @@ export default function Products() {
           <button className="btn btn-ghost" onClick={() => navigate("shop")}>Open shop view</button>
         </div>
         <div className="product-grid">
-          {PRODUCTS.map((p) => <ProductCard key={p.id} product={p}/>)}
+          {skelLoading
+            ? Array.from({ length: 12 }).map((_, i) => <SkeletonCard key={i}/>)
+            : products.map((p) => <ProductCard key={p._id} product={p}/>)
+          }
         </div>
       </div>
     );
@@ -47,12 +112,12 @@ export default function Products() {
   }
 
   const catName = CATEGORIES.find((c) => c.key === product.category)?.name.toLowerCase();
-  const wished = isWished(product.id);
+  const wished = isWished(product._id);
 
   return (
     <div style={{margin: "24px 0"}}>
       <div className="pd-grid">
-        <div className="pd-img-wrap">
+        <div className="pd-img-wrap" onClick={() => setZoomOpen(true)} style={{cursor: "zoom-in"}}>
           <img src={product.image} alt={product.name}/>
         </div>
         <div className="pd-info">
@@ -60,7 +125,7 @@ export default function Products() {
           <h1>{product.name}</h1>
           <div className="product-rating" style={{fontSize: 14}}>
             <span className="star"><Icon name="star" size={14}/></span>
-            {product.rating} • {product.stock} in stock
+            {product.rating} • {product.countInStock} in stock
           </div>
           <div className="pd-price">
             LE {product.price.toLocaleString()}
@@ -89,13 +154,26 @@ export default function Products() {
               onClick={() => setQty(qty + 1)}>+</button>
           </div>
           <div className="pd-actions">
-            <button className="btn btn-teal"
-              onClick={() => { addToCart(product, qty); pushToast("Added to cart"); }}>
-              <Icon name="cart" size={16}/> Add to cart
+            <button
+              className={"btn btn-teal add-btn" + (adding ? " adding" : "")}
+              style={{ width: "auto" }}
+              onClick={handleAddToCart}
+            >
+              <span className="add-btn-icon">
+                <span className="icon-plus"><Icon name="plus" size={15}/></span>
+                <span className="icon-cart"><Icon name="cart" size={15}/></span>
+                <span className="icon-box" />
+              </span>
+              <span className="add-btn-text" key={adding ? "added" : "add"}>
+                {adding ? "Added" : "Add to cart"}
+              </span>
             </button>
             <button className="btn btn-ghost"
-              onClick={() => { toggleWishlist(product); pushToast(wished ? "Removed from wishlist" : "Added to wishlist"); }}>
-              <Icon name="heart" size={16}/> {wished ? "Wishlisted" : "Add to wishlist"}
+              onClick={() => { toggleWishlist(product); pushToast(wished ? "Removed from wishlist" : "Added to wishlist ♥", wished ? "removed" : "wishlist"); }}
+              style={{ color: wished ? "var(--coral)" : "var(--text)" }}
+            >
+              <Icon name="heart" size={16} style={{ fill: wished ? "var(--coral)" : "transparent", color: wished ? "var(--coral)" : "var(--text)" }}/> 
+              {wished ? "Wishlisted" : "Add to wishlist"}
             </button>
           </div>
         </div>
@@ -106,12 +184,30 @@ export default function Products() {
           <div><h2>You may also like</h2></div>
         </div>
         <div className="product-grid">
-          {PRODUCTS
-            .filter((p) => p.category === product.category && p.id !== product.id)
+          {products
+            .filter((p) => p.category === product.category && p._id !== product._id)
             .slice(0, 4)
-            .map((p) => <ProductCard key={p.id} product={p}/>)}
+            .map((p) => <ProductCard key={p._id} product={p}/>)}
         </div>
       </section>
+
+      {zoomOpen && (
+        <div
+          style={{
+            position: "fixed", inset: 0, zIndex: 999,
+            background: "rgba(0,0,0,0.85)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            cursor: "zoom-out",
+          }}
+          onClick={() => setZoomOpen(false)}
+        >
+          <img
+            src={product.image}
+            alt={product.name}
+            style={{ maxHeight: "90vh", maxWidth: "90vw", objectFit: "contain" }}
+          />
+        </div>
+      )}
     </div>
   );
 }

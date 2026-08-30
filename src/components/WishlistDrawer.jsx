@@ -21,7 +21,7 @@ export default function WishlistDrawer() {
             </div>
           )}
           {wishlist.map((i) => (
-            <div key={i.id} className="cart-item">
+            <div key={i._id} className="cart-item">
               <img src={i.image} alt=""/>
               <div>
                 <div className="cart-item-name">{i.name}</div>
@@ -30,7 +30,7 @@ export default function WishlistDrawer() {
                   <button className="btn btn-teal" style={{padding: "5px 10px", fontSize: 12}}
                     onClick={() => { addToCart(i); pushToast("Added to cart"); }}>Add to cart</button>
                   <button className="btn btn-ghost" style={{padding: "5px 10px", fontSize: 12}}
-                    onClick={() => { close(); navigate("products/" + i.id); }}>View</button>
+                    onClick={() => { close(); navigate("products/" + i._id); }}>View</button>
                 </div>
               </div>
               <button className="remove-btn"

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Icon from "../components/Icon.jsx";
 import { useApp } from "../context/AppContext.jsx";
+import api from "../api/axios.js";
 
 const EMAIL_RX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -48,7 +49,7 @@ export default function Login() {
     return e;
   };
 
-  const submit = (ev) => {
+  const submit = async (ev) => {
     ev.preventDefault();
     const v = validate();
     setErrors(v);
@@ -56,28 +57,23 @@ export default function Login() {
 
     setBusy(true);
     try {
-      let users = [];
-      try {
-        users = JSON.parse(window.localStorage.getItem("uxnin_users") || "[]");
-      } catch { users = []; }
+      const { data } = await api.post("/auth/login", {
+        email: form.email.trim().toLowerCase(),
+        password: form.password,
+      });
 
-      const found = users.find(
-        (u) => u.email.toLowerCase() === form.email.trim().toLowerCase()
-            && u.password === form.password
-      );
+    // نخزن التوكن في localStorage عشان axios.js يستخدمه تلقائيًا في أي request جاي
+      window.localStorage.setItem("token", data.token);
 
-      if (!found) {
-        setErrors({ password: "Incorrect email or password" });
-        setBusy(false);
-        return;
-      }
-
-      const safeUser = { name: found.name, email: found.email };
+      const safeUser = { _id: data._id, name: data.name, email: data.email, isAdmin: data.isAdmin };
       setUser(safeUser);
       pushToast("Welcome back!");
       navigate("home");
-    } catch {
-      pushToast("Something went wrong, try again");
+    } catch (err) {
+      const msg = err.response?.data?.message || "حدث خطأ، حاول مرة أخرى";
+      setErrors({ password: msg });
+      pushToast(msg, "error");
+    } finally {
       setBusy(false);
     }
   };
@@ -145,7 +141,7 @@ export default function Login() {
             <button
               type="button"
               className="auth-link-btn"
-              onClick={() => pushToast("Password reset coming soon")}
+              onClick={() => navigate("forgot-password")}
             >
               Forgot password?
             </button>

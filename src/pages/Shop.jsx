@@ -1,18 +1,43 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import Icon from "../components/Icon.jsx";
 import ProductCard from "../components/ProductCard.jsx";
-import { PRODUCTS, CATEGORIES } from "../data/products.js";
+import { CATEGORIES } from "../data/products.jsx";
 import { useApp } from "../context/AppContext.jsx";
+import api from "../api/axios.js";
 
 export default function Shop() {
-  const { cart, updateQty, removeFromCart, navigate } = useApp();
+  const {
+    cart, updateQty, removeFromCart, navigate,
+    promo, setPromo, promoApplied, discountPercent, isApplyingPromo, applyPromo,
+  } = useApp();
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [cat, setCat] = useState("all");
   const [q, setQ] = useState("");
+  const cartRef = useRef(null);
   const [sort, setSort] = useState("featured");
-  const [promo, setPromo] = useState("");
-  const [promoApplied, setPromoApplied] = useState(false);
+  const [scrollPos, setScrollPos] = useState(0);
 
-  // listen for category-jump events from Home
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const { data } = await api.get("/products");
+        setProducts(data);
+      } catch (err) {
+        console.error("Failed to load products:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => setScrollPos(window.scrollY);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   useEffect(() => {
     const handler = (e) => setCat(e.detail);
     window.addEventListener("uxnin:cat", handler);
@@ -20,7 +45,7 @@ export default function Shop() {
   }, []);
 
   const list = useMemo(() => {
-    let arr = PRODUCTS.slice();
+    let arr = products.slice();
     if (cat !== "all") arr = arr.filter((p) => p.category === cat);
     if (q.trim()) {
       const t = q.toLowerCase();
@@ -32,17 +57,12 @@ export default function Shop() {
     else if (sort === "high") arr.sort((a, b) => b.price - a.price);
     else if (sort === "rating") arr.sort((a, b) => b.rating - a.rating);
     return arr;
-  }, [cat, q, sort]);
+  }, [cat, q, sort, products]);
 
   const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
-  const discount = promoApplied ? Math.round(subtotal * 0.1) : 0;
-  const shipping = subtotal > 0 && subtotal < 300 ? 50 : 0;
+  const discount = promoApplied ? Math.round(subtotal * (discountPercent / 100)) : 0;
+  const shipping = subtotal > 0 && subtotal - discount < 300 ? 50 : 0;
   const total = subtotal - discount + shipping;
-
-  const applyPromo = () => {
-    if (promo.trim().toUpperCase() === "FIT10") setPromoApplied(true);
-    else { setPromoApplied(false); alert("Invalid promo code. Try FIT10."); }
-  };
 
   return (
     <div>
@@ -85,16 +105,22 @@ export default function Shop() {
             ))}
           </div>
           <div className="shop-product-grid">
-            {list.map((p) => <ProductCard key={p.id} product={p}/>)}
-            {list.length === 0 && (
-              <div className="cart-empty" style={{gridColumn: "1/-1"}}>
-                No products match your search.
-              </div>
+            {loading ? (
+              <div className="cart-empty" style={{gridColumn: "1/-1"}}>Loading products...</div>
+            ) : (
+              <>
+                {list.map((p) => <ProductCard key={p._id} product={p}/>)}
+                {list.length === 0 && (
+                  <div className="cart-empty" style={{gridColumn: "1/-1"}}>
+                    No products match your search.
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
 
-        <aside className="cart-panel">
+        <aside className="cart-panel" ref={cartRef}>
           <h3>Your cart ({cart.reduce((s, i) => s + i.qty, 0)})</h3>
           <div className="cart-items">
             {cart.length === 0 && (
@@ -103,18 +129,18 @@ export default function Shop() {
               </div>
             )}
             {cart.map((i) => (
-              <div key={i.id} className="cart-item">
+              <div key={i._id} className="cart-item">
                 <img src={i.image} alt=""/>
                 <div>
                   <div className="cart-item-name">{i.name}</div>
                   <div className="cart-item-price">LE {i.price.toLocaleString()}</div>
                   <div className="qty-row">
-                    <button className="qty-btn" onClick={() => updateQty(i.id, i.qty - 1)}>−</button>
+                    <button className="qty-btn" onClick={() => updateQty(i._id, i.qty - 1)}>−</button>
                     <span className="qty-val">{i.qty}</span>
-                    <button className="qty-btn" onClick={() => updateQty(i.id, i.qty + 1)}>+</button>
+                    <button className="qty-btn" onClick={() => updateQty(i._id, i.qty + 1)}>+</button>
                   </div>
                 </div>
-                <button className="remove-btn" onClick={() => removeFromCart(i.id)}>
+                <button className="remove-btn" onClick={() => removeFromCart(i._id)}>
                   <Icon name="x" size={16}/>
                 </button>
               </div>
@@ -125,14 +151,20 @@ export default function Shop() {
               placeholder="Promo code (FIT10)"
               value={promo}
               onChange={(e) => setPromo(e.target.value)}
+              disabled={isApplyingPromo}
             />
-            <button className="btn btn-ghost" style={{padding: "9px 14px"}} onClick={applyPromo}>
-              Apply
+            <button
+              className="btn btn-ghost"
+              style={{padding: "9px 14px"}}
+              onClick={() => applyPromo(subtotal)}
+              disabled={isApplyingPromo}
+            >
+              {isApplyingPromo ? "Applying..." : "Apply"}
             </button>
           </div>
           {promoApplied && (
             <div style={{fontSize: 12.5, color: "var(--teal)", fontWeight: 600}}>
-              ✓ FIT10 applied — 10% off
+              ✓ {discountPercent}% off applied
             </div>
           )}
           <div className="summary">
@@ -155,6 +187,15 @@ export default function Shop() {
           </button>
         </aside>
       </div>
+      <button
+        className="scroll-btn scroll-top-btn"
+        onClick={() => scrollPos > 300
+          ? window.scrollTo({ top: 0, behavior: "smooth" })
+          : cartRef.current?.scrollIntoView({ behavior: "smooth" })
+        }
+      >
+        {scrollPos > 300 ? "↑" : "↓"}
+      </button>
     </div>
   );
 }

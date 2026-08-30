@@ -57,8 +57,19 @@ const NAV_LINKS = [
   },
 ];
 
+const ADMIN_LINK = {
+  to: "admin-orders",
+  label: "Admin",
+  icon: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z"/>
+    </svg>
+  ),
+};
+
 export default function Navbar() {
   const { route, navigate, cart, wishlist, theme, setTheme, setDrawerOpen, user, logout } = useApp();
+  const navLinks = user?.isAdmin ? [...NAV_LINKS, ADMIN_LINK] : NAV_LINKS;
 
   const dark = theme === "dark";
   const cartCount = cart.reduce((s, i) => s + i.qty, 0);
@@ -176,7 +187,7 @@ export default function Navbar() {
             className="desktop-links"
             style={{ display: "flex", alignItems: "center", gap: "0.15rem", marginLeft: "0.5rem" }}
           >
-            {NAV_LINKS.map(({ to, label }) => {
+            {navLinks.map(({ to, label }) => {
               const active = route === to;
               return (
                 <a
@@ -480,7 +491,7 @@ export default function Navbar() {
             color: "rgba(255,255,255,0.3)", textTransform: "uppercase",
             padding: "0 0.75rem", marginBottom: "0.5rem",
           }}>Navigation</p>
-          {NAV_LINKS.map(({ to, label, icon }, i) => {
+          {navLinks.map(({ to, label, icon }, i) => {
             const active = route === to;
             return (
               <a

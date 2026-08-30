@@ -1,15 +1,16 @@
-import React, { useState } from "react";
+import React from "react";
 import Icon from "../components/Icon.jsx";
 import { useApp } from "../context/AppContext.jsx";
 
 export default function Cart() {
-  const { cart, updateQty, removeFromCart, navigate, placeOrder, pushToast } = useApp();
-  const [promo, setPromo] = useState("");
-  const [promoApplied, setPromoApplied] = useState(false);
+    const {
+    cart, updateQty, removeFromCart, navigate, placeOrder,
+    promo, setPromo, promoApplied, discountPercent, isApplyingPromo, applyPromo,
+  } = useApp();
 
   const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
-  const discount = promoApplied ? Math.round(subtotal * 0.1) : 0;
-  const shipping = subtotal > 0 && subtotal < 300 ? 50 : 0;
+  const discount = promoApplied ? Math.round(subtotal * (discountPercent / 100)) : 0;
+  const shipping = subtotal > 0 && subtotal - discount < 300 ? 50 : 0;
   const total = subtotal - discount + shipping;
 
   const checkout = () => {
@@ -41,20 +42,20 @@ export default function Cart() {
         <div className="cart-page">
           <div className="cart-list">
             {cart.map((i) => (
-              <div key={i.id} className="cart-row">
+              <div key={i._id} className="cart-row">
                 <img src={i.image} alt=""/>
                 <div>
                   <div className="name">{i.name}</div>
                   <div className="meta">{i.brand} · LE {i.price.toLocaleString()}</div>
                 </div>
                 <div className="qty-row">
-                  <button className="qty-btn" onClick={() => updateQty(i.id, i.qty - 1)}>−</button>
+                  <button className="qty-btn" onClick={() => updateQty(i._id, i.qty - 1)}>−</button>
                   <span className="qty-val">{i.qty}</span>
-                  <button className="qty-btn" onClick={() => updateQty(i.id, i.qty + 1)}>+</button>
+                  <button className="qty-btn" onClick={() => updateQty(i._id, i.qty + 1)}>+</button>
                 </div>
                 <div style={{fontWeight: 700}}>LE {(i.price * i.qty).toLocaleString()}</div>
-                <button className="remove-btn" onClick={() => removeFromCart(i.id)}>
-                  <Icon name="x" size={18}/>
+                  <button className="remove-btn" onClick={() => removeFromCart(i._id)}>
+                    <Icon name="x" size={18}/>
                 </button>
               </div>
             ))}
@@ -66,15 +67,17 @@ export default function Cart() {
                 placeholder="Promo code (FIT10)"
                 value={promo}
                 onChange={(e) => setPromo(e.target.value)}
+                disabled={isApplyingPromo}
               />
               <button className="btn btn-ghost" style={{padding: "9px 14px"}}
-                onClick={() => setPromoApplied(promo.trim().toUpperCase() === "FIT10")}>
-                Apply
+                disabled={isApplyingPromo}
+                onClick={() => applyPromo(subtotal)}>
+                {isApplyingPromo ? "Applying..." : "Apply"}
               </button>
             </div>
             {promoApplied && (
               <div style={{fontSize: 12.5, color: "var(--teal)", fontWeight: 600}}>
-                ✓ FIT10 applied — 10% off
+                ✓ {discountPercent}% off applied
               </div>
             )}
             <div className="summary">
